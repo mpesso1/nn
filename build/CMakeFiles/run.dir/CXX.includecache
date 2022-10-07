@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../library/base.h
+Eigen/Dense
+-
+vector
+-
+iostream
+-
+
+/home/mason/Neurons/source/run.cpp
+iostream
+-
+base.h
+/home/mason/Neurons/source/base.h
+Eigen/Dense
+-
+vector
+-
+memory
+-
+random
+-
+
