@@ -18,8 +18,22 @@ using namespace std;
 
 namespace nn
 {
+    class idx
+    {
+    private:
+    public:
+        idx();
+        ~idx();
 
-    class fp { 
+        enum w_idx {HEIGHT, WIDTH, DEPTH, ACTIVATION, F, P, S};
+        enum act_idx {RELU, TANH, SIGMOID};
+        enum i_idx {HEIGHT, WIDTH, DEPTH};
+        enum o_idx {HEIGHT, WIDTH, DEPTH, ACTIVATION};
+    };
+    
+    
+
+    class fp : public idx { 
     private:
         enum Activation {RELU, TANH, SIGMOID};
 
@@ -27,12 +41,14 @@ namespace nn
         fp();
         ~fp();
 
+        void propogate(vector<vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> i, vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hw, vector<vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> o);
+
         void relu();
         void tanh();
         void sigmoid();
     };
 
-    class bp { // Back propogation
+    class bp : public idx { // Back propogation
     private:
 
     public:
@@ -41,7 +57,7 @@ namespace nn
     };
 
 
-    class nn { // Neural Network
+    class nn : public idx { // Neural Network
     private:
     // hyperparameters
         const Eigen::Matrix<int,3,1> input_type = Eigen::ArrayXXi::Zero(3,1); // (height, width, depth)
@@ -50,11 +66,11 @@ namespace nn
     
     // Memory
         // Weights
-        vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights {{{}}}; // C(M(N(d(Fx x Fy))))
+        vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights {{{{}}}}; // C(M(N(d(Fx x Fy))))
         // Inputs
-        vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>> input {{}}; // B(N(d(Fx x Fy)))
+        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> input_train {{}}; // B_idx(B_size(d(Fx x Fy)))
         // Outputs
-        vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>> output {{}}; // B(N(d(Fx x Fy)))
+        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> output_train {{}}; // B_idx(B_size(d(Fx x Fy)))
         
     public:
 
@@ -83,6 +99,7 @@ namespace nn
          */
         ~nn();
 
+
         void init_input();
 
 
@@ -91,11 +108,28 @@ namespace nn
 
         void init_weights(bool param_share_layer = true, bool param_share_depth = false);
 
+        
+        void propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<vector<vector<vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>>> hw, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o);
+
+
+        /**
+         * @brief Insert training data and give bach size to be trained on
+         * 
+         * @param input a set of matrix sets (i(d(Matrix))) : d:= depth of the matri, i:= input index
+         * @param output a set of matric sets (i(d(Matrix))) : d:= depth of the matri, i:= input index
+         * @param batch_size  size of training batches
+         */
+        void train(vector<vector<Eigen::Matrix<float,Eigen::Dynamic, Eigen::Dynamic>>> input, vector<vector<Eigen::Matrix<float,Eigen::Dynamic, Eigen::Dynamic>>> output, int batch_size);
+
+
         vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> get_hidden_weights();
+
 
         void print_layer_sizes(bool param_share_layer = true, bool param_share_depth = false);
 
+
         void print_hidden_weights(bool param_share_layer = true, bool param_share_depth = false);
+
 
         /**
          * @brief Print network hyperparameters

@@ -27,11 +27,11 @@ int main() {
 
     unique_ptr<nn::nn> FC_ptr(new nn::nn(input,hidden,output));
 
-    FC_ptr->print_network();
+    // FC_ptr->print_network();
 
     // auto test = FC_ptr->get_hidden_weights();
 
-    FC_ptr->print_layer_sizes();
+    // FC_ptr->print_layer_sizes();
     // FC_ptr->print_hidden_weights(false);
     // for (auto i : test) {
     //     for (auto j : i) {
@@ -42,6 +42,29 @@ int main() {
     //         }
     //     }
     // }
+
+    vector<float> i {0,1,2,3};
+
+    for (auto z : i) {
+        cout << z << endl;
+    }
+
+    // for(auto z = i.begin(); z != i.end(); z++) {
+    //     // cout << "Z: " << (*z) << endl;
+    //     // cout << "i.end(): " << (i.end() << endl;
+    //     cout << i.end() - z << endl;
+    //     // cout << (*z) << endl;
+    // }
+
+    // try {
+    //     cout << "Mason\n";
+    //     cout << << endl;
+    //     // cout << i << endl;
+    // } catch(...) {
+    //     cout << "Pesson" << endl;
+    // }
+
+
 
     // vector<vector<vector<float>>> test;
     // test.resize(3,vector<vector<float>>(4,vector<float>(5)));

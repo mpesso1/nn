@@ -18,17 +18,32 @@ using namespace std;
 // Default Constructor
 nn::nn::nn() {}
 
-// Overload Constructor
+/**
+ * @brief Construct a new nn::nn::nn object
+ * 
+ * @param input 
+ * @param hidden 
+ * @param output 
+ */
 nn::nn::nn(const Eigen::Matrix<int,3,1>& input, const vector<Eigen::Matrix<int,7,1>>& hidden, const Eigen::Matrix<int,4,1>& output) : 
     input_type(input), output_type(output), hidden_layer_type(hidden)
     {
         nn::init_weights();
     }
 
-// Default Destructor
+/**
+ * @brief Destroy the nn::nn::nn object
+ * 
+ */
 nn::nn::~nn() {}
 
-// init weights to random values C(M(N(d(Fx x Fy)))) vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights
+
+/**
+ * @brief init weights to random values C(M(N(d(Fx x Fy)))) vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights
+ * 
+ * @param param_share_layer 
+ * @param param_share_depth 
+ */
 void nn::nn::init_weights(bool param_share_layer, bool param_share_depth) {
     
         hidden_weights.resize(hidden_layer_type.size()); // resize weight memory to the correct # of convolutions
@@ -82,6 +97,40 @@ void nn::nn::init_weights(bool param_share_layer, bool param_share_depth) {
             c_itr++; // increase convolution pointer
         }
 };
+
+void nn::nn::train(vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> input, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> output, int batch) {
+    if (input.size() != output.size()) {
+        cout << "Input data size: " << input.size() << endl;
+        cout << "Output data size: " << output.size() << endl;
+        cout << "MUST MATCH\n";
+        return;
+    }
+    else {
+
+    }
+}
+
+void nn::nn::propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<vector<vector<vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>>> hw, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o) {
+
+    int c_itr = 0; // convolution counter
+    int d_idx = 0;
+    auto neuron_input = i;
+
+    for (auto c = hw.begin(); c != hw.end(); c++) { // loop over each convolution
+        for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of the convolution
+            for (auto n = m->begin(); n != m->end(); n++) { // loop over each neuron of the filter
+                d_idx = 0;
+                for (auto d = n->begin(); d != n->end(); d++) { // loop over all input depths
+                    // THE INPUT MUST BE PUT INTO ARRAY FORMAT...
+                    // NEED TO DECIDE IF I SHOULD FP CLASS TO DO THIS
+                    // NEED TO CONSIDER PASSING FUNCTION POINTERS AS AN ARGUMENT TO GET RID OF THIS REPEDITIVE LOOP THROUGHOUT PROGRAM
+                    d_idx++;
+                }
+            }
+        }
+        c_itr++; // increase convolution pointer
+    }
+}
 
 vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> nn::nn::get_hidden_weights(){
     return hidden_weights;
