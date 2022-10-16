@@ -16,6 +16,8 @@
         "thread": "cpp",
         "notify": "cpp",
         "texture": "cpp",
-        "ref_ptr": "cpp"
+        "ref_ptr": "cpp",
+        "eigen": "cpp",
+        "cmath": "cpp"
     }
 }

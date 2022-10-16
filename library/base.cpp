@@ -25,10 +25,16 @@ nn::nn::nn() {}
  * @param hidden 
  * @param output 
  */
-nn::nn::nn(const Eigen::Matrix<int,3,1>& input, const vector<Eigen::Matrix<int,7,1>>& hidden, const Eigen::Matrix<int,4,1>& output) : 
+nn::nn::nn(const Eigen::Matrix<int,3,1>& input, vector<Eigen::Matrix<int,7,1>>& hidden, const Eigen::Matrix<int,4,1>& output) : 
     input_type(input), output_type(output), hidden_layer_type(hidden)
     {
+        cout << "\033[1;31m NETWORK ARCHITECTURE SUCCESFULLY ADDED \033[0m\n";
+        
         nn::init_weights();
+        cout << "\033[1;34m WEIGHTS SUCCESFULLY SET \033[0m\n";
+        
+        nn::init_neurons();
+        cout << "\033[1;32m NEURONS SUCCESFULLY SET \033[0m\n";
     }
 
 /**
@@ -46,57 +52,227 @@ nn::nn::~nn() {}
  */
 void nn::nn::init_weights(bool param_share_layer, bool param_share_depth) {
     
-        hidden_weights.resize(hidden_layer_type.size()); // resize weight memory to the correct # of convolutions
+    hidden_weights.resize(hidden_layer_type.size()); // resize weight memory to the correct # of convolutions
+    bias.resize(hidden_layer_type.size());
 
-        int c_itr = 0; // convolution counter
+    int c_idx = 0; // convolution counter
 
-        for (auto c = hidden_layer_type.begin(); c != hidden_layer_type.end(); c++) { // loop over each convolution
 
-            hidden_weights[c_itr].resize((*c)(nn::depth)); // resize the number of desired filters for the specific convolution
+    for (auto c_type = hidden_layer_type.begin(); c_type != hidden_layer_type.end(); c_type++) { // loop over each convolution
 
-            for (int m = 0; m < (*c)(nn::depth); m++){ // loop over each filter of the convolution
+        hidden_weights[c_idx].resize((*c_type)(depth)); // resize the number of desired filters for the specific convolution
+        bias[c_idx].resize((*c_type)(depth));
 
-                int N = 1;
-                if (!param_share_layer && !param_share_depth) {
-                    N = (input_type[nn::height]*input_type[nn::width] - (*c)(nn::F) + 2*(*c)(nn::P))/(*c)(nn::S) + 1;
+        for (int m = 0; m < (*c_type)(depth); m++){ // loop over each filter of the convolution
+
+            int N = 1;
+            if (!param_share_layer && !param_share_depth) {
+                if (c_idx == 0) {
+                    N = (input_type[height]*input_type[width] - pow((*c_type)(nn::F),2) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
                 }
+                else {
+                    N = ((*(c_type-1))(height)*(*(c_type-1))(width) - pow((*c_type)(nn::F),2) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
+                }
+            }
+            
+            if (N != round(N)) {
+                cout << "Error: number of neurons not obtainable.\n";
+                cout << "Check hyperparameters of layer.\n";
+                cout << "N: " << N << endl;
+            }
 
-                hidden_weights[c_itr][m].resize(N); // for a certain covolution and filter, specify the number neurons for that filter
+            hidden_weights[c_idx][m].resize(N); // for a certain convolution and filter, specify the number of neurons for that filter
+            bias[c_idx][m].resize(N);
 
-                for (int n = 0; n < N; n++) { // one loop to produce weights for neurons of the filter
+            for (int n = 0; n < N; n++) { // for each neuron of that filter of that convolution
+
+                int Depth = 0;
+                
+                if (c_idx ==  0) {
+                    Depth = input_type[depth];
+                    hidden_weights[c_idx][m][n].resize(Depth); // for a certain convolution, filter, and neuron, specify the depth of the input
+                    bias[c_idx][m][n].resize(Depth);
+                }
+                else {
+                    Depth = hidden_weights[c_idx-1].size();
+                    hidden_weights[c_idx][m][n].resize(Depth); // for a certain convolution, filter, and neuron, specify the depth of the input
+                    bias[c_idx][m][n].resize(Depth);
+                }
+                
+                for (int d = 0; d < Depth; d++) { // loop over all input depths
                     
-                    hidden_weights[c_itr][m][n].resize(input_type[nn::depth]); // for a certain convolution, filter, and neuron, specify the depth of the input
+                    random_device rd;
+                    mt19937 gen(rd());
+                    uniform_real_distribution<> distr(-1,1);
 
-                    for (int d = 0; d < input_type[nn::depth]; d++) { // loop over all input depths
+                    bias[c_idx][m][n][d] = distr(gen); // give a bias to each depth
+
+                    if ((*c_type)(nn::F) == 1) { // if the filter size is of size 1
+                        hidden_weights[c_idx][m][n][d].resize((*c_type)(nn::F), 1); // for a conv, filter, neuron, and input depth, specify the weight matrix
+                        hidden_weights[c_idx][m][n][d](0,0) = distr(gen);
+                    }
+
+                    else { // if filter is greater than 1... next size should be 4 (2x2 filter)
                         
-                        random_device rd;
-                        mt19937 gen(rd());
-                        uniform_real_distribution<> distr(-1,1);
+                        hidden_weights[c_idx][m][n][d].resize((*c_type)(nn::F), (*c_type)(nn::F)); // for a conv, filter, neuron, and input depth, specify the weight matrix
 
-                        if ((*c)(nn::F)/2 == 1) { // if the filter size is of size 1
+                        for(int i = 0; i < hidden_weights[c_idx][m][n][d].rows(); i++) { // loop over each weight and assign it a random # between -1, 1
 
-                            hidden_weights[c_itr][m][n][d].resize((*c)(nn::F)/2, 0); // for a conv, filter, neuron, and input depth, specify the weight matrix
-                            hidden_weights[c_itr][m][n][d](1,0) = distr(gen);
-                        }
+                            for(int j = 0; j < hidden_weights[c_idx][m][n][d].cols(); j++) {
 
-                        else { // if filter is greater than 1... next size should be 4 (2x2 filter)
-                            
-                            hidden_weights[c_itr][m][n][d].resize((*c)(nn::F)/2, (*c)(nn::F)/2); // for a conv, filter, neuron, and input depth, specify the weight matrix
 
-                            for(int i = 0; i < hidden_weights[c_itr][m][n][d].rows(); i++) { // loop over each weight and assign it a random # between -1, 1
-
-                                for(int j = 0; j < hidden_weights[c_itr][m][n][d].cols(); j++) {
-
-                                    hidden_weights[c_itr][m][n][d](i,j) = distr(gen);
-                                }
+                                hidden_weights[c_idx][m][n][d](i,j) = distr(gen);
                             }
                         }
                     }
                 }
             }
-            c_itr++; // increase convolution pointer
         }
+        c_idx++; // increase convolution pointer
+    }
 };
+
+
+void nn::nn::init_neurons() {
+    
+    neuron_outputs.resize(hidden_layer_type.size()); // resize to the number of convolutions
+
+    int c_idx = 0; // convolution counter
+
+    for (auto c = neuron_outputs.begin(); c != neuron_outputs.end(); c++) { // loop through each convolution
+
+        neuron_outputs[c_idx].resize(hidden_layer_type[c_idx](depth)); // resize to the number of filters in the convolution
+
+        for (auto m = c->begin(); m != c->end(); m++) { // loop through each filter of the convolution
+
+            (*m) = Eigen::ArrayXXf::Zero( hidden_layer_type[c_idx](height), hidden_layer_type[c_idx](width) ); // define filter height and width
+            // cout << m->rows() << "," << m->cols() << endl;  // check the number of rows and columns is correct
+        }
+
+        c_idx++; // increment the 
+    
+    }
+}
+
+
+void nn::nn::forward(vector< vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>& in, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>& out) {
+    int c_idx = 0; // convolution
+    int m_idx = 0; // filter
+    int n_idx = 0; // neuron
+    int d_idx = 0; // input depth
+    int w_idx = 0; // weight / weight matrix
+
+    batch_size = in.size();
+    init_output();
+    cout << "\033[1;37m OUTPUT SUCCESFULLY SET \033[0m\n";
+
+    int b {}; // temporary
+
+    int j_ref = 0; // to be used later.. sollution to parameter sharing
+    int i_ref = 0; // to be used later..
+
+    vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> store;
+    for (auto c = hidden_weights.begin(); c != hidden_weights.end(); c++) { // loop over convolutions
+        
+        store.resize(c->size()); // set size to the number of filters of the convolution
+
+        int filter_dem = hidden_layer_type[c_idx](F);
+        
+        m_idx = 0;
+        for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of convolution
+            
+            store[m_idx] = Eigen::ArrayXXf::Zero(neuron_outputs[c_idx][m_idx].size(),1); // set the size of matrix to number of nerons in the filter
+            // cout << "m\n";
+            w_idx = 0;
+            for (auto n = m->begin(); n != m->end(); n++) { // loop over each neuron of filter
+                
+                // loop over input
+                n_idx = 0;
+                for (int j = 0; j != neuron_outputs[c_idx][m_idx].cols(); j++) { // loop over width of input
+                    for (int i = 0; i != neuron_outputs[c_idx][m_idx].rows(); i++) { // loop over height of input
+                        // cout << "n\n";
+                        
+                        
+                        d_idx = 0;
+                        for (auto d = n->begin(); d != n->end(); d++) { // loop over each input depth
+                            // cout << ((in[b][d_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx] << endl;
+                            // cout << (in[b][d_idx].block(i,j,filter_dem,filter_dem)).size() << endl;
+                            if (c_idx == 0) {
+                                // cout << "p\n";
+                                // cout << bias[c_idx][m_idx][w_idx][d_idx] << endl;
+                                store[m_idx](n_idx,0) += ((in[b][d_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx];
+                                // cout << "e\n";
+                            }
+                            else {
+                                
+                                store[m_idx](n_idx,0) += ((neuron_outputs[c_idx-1][m_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx];
+                            }
+                            activate(store[m_idx](n_idx,0), hidden_layer_type[c_idx](act));
+                            d_idx++;
+                        }
+                        n_idx++;
+                    }
+                }
+
+                neuron_outputs[c_idx][m_idx] = store[m_idx].reshaped(sqrt(neuron_outputs[c_idx][m_idx].size()), sqrt(neuron_outputs[c_idx][m_idx].size()));
+                if (c_idx == (hidden_weights.size() - 1)) {
+                    output_train[b][m_idx] = neuron_outputs[c_idx][m_idx];
+                    cost[b][m_idx] = output_train[b][m_idx] - out[b][m_idx]; // NEEDS MORE ABILITY... calculate the cost comparing the output to the desired output specified
+                }
+                w_idx++;
+            }
+            m_idx++;
+        }
+        cout << "Neuron outputs for conv: " << c_idx << endl;
+        print_neuron_outputs();
+        c_idx++;
+    }
+
+    cout << "OUTPUT: " << endl;
+    print_output();
+    
+}
+
+void nn::nn::backward() {
+
+}
+
+void nn::nn::init_output() {
+    output_train.resize(batch_size);
+    for (int b = 0; b != batch_size; b++) {
+        output_train[b].resize(output_type(depth));
+        for (int d = 0; d != output_type(depth); d++) {
+            output_train[b][d] = Eigen::ArrayXXf::Zero(output_type(height),output_type(width));
+        }
+    }
+}
+
+void nn::nn::activate(float& val, int func) {
+    if (func == 0) {
+        if (val>0) {
+            val = val;
+        }
+        else {
+            val = 0;
+        }
+    }
+}
+
+void nn::nn::print_neuron_outputs() {
+    for (auto& c : neuron_outputs) {
+        for (auto& m : c) {
+            cout << m.transpose() << endl;
+        }
+    }
+}
+
+void nn::nn::print_output() {
+    for (auto& b : output_train) {
+        for (auto& d : b) {
+            cout << d << endl;
+        }
+    }
+}
 
 void nn::nn::train(vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> input, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> output, int batch) {
     if (input.size() != output.size()) {
@@ -110,27 +286,51 @@ void nn::nn::train(vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynam
     }
 }
 
-void nn::nn::propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<vector<vector<vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>>> hw, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o) {
+
+void nn::nn::propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o) {
 
     int c_itr = 0; // convolution counter
-    int d_idx = 0;
+    int d_idx = 0; // input depth counter
+    int m_idx = 0; // filter depth counter
+    int n_idx = 0; // ountput neuron counter
     auto neuron_input = i;
+    int N = 0;
+    vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> next_input {};
 
-    for (auto c = hw.begin(); c != hw.end(); c++) { // loop over each convolution
+    // vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> next_input{};
+
+    for (auto c = hidden_weights.begin(); c != hidden_weights.end(); c++) { // loop over each convolution
         for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of the convolution
-            for (auto n = m->begin(); n != m->end(); n++) { // loop over each neuron of the filter
-                d_idx = 0;
-                for (auto d = n->begin(); d != n->end(); d++) { // loop over all input depths
-                    // THE INPUT MUST BE PUT INTO ARRAY FORMAT...
-                    // NEED TO DECIDE IF I SHOULD FP CLASS TO DO THIS
-                    // NEED TO CONSIDER PASSING FUNCTION POINTERS AS AN ARGUMENT TO GET RID OF THIS REPEDITIVE LOOP THROUGHOUT PROGRAM
-                    d_idx++;
+            for(auto n = m->begin(); n != m->end(); n++) {
+                next_input.resize(nn::height);
+
+                if (n->size() == 1) { // parameter sharing... only one weight matrix for each filter
+                    int filter_dem = sqrt(hidden_layer_type[c_itr](nn::F));
+                    for (int i = 0; i != hidden_layer_type[c_itr](nn::width); i++) {
+                        for (int j = 0; j != hidden_layer_type[c_itr](nn::height); j++) {
+                            for (auto d = n->begin(); d != n->end(); d++) {
+                                next_input[m_idx](n_idx) += (neuron_input[d_idx].block(i,j,filter_dem,filter_dem).cwiseProduct((*d))).sum();
+                            }
+                        }
+                    }
                 }
+                else if (n->size() > 1) { // no parameter sharing
+
+                }
+                else { // error
+
+                }
+                
+
             }
+            next_input[m_idx].reshaped<Eigen::RowMajor>(sqrt(m->size()),sqrt(m->size()));
+
+            m_idx++;
         }
         c_itr++; // increase convolution pointer
     }
 }
+
 
 vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> nn::nn::get_hidden_weights(){
     return hidden_weights;
@@ -139,112 +339,95 @@ vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dyna
 void nn::nn::print_layer_sizes(bool param_share_layer, bool param_share_depth ) {
 
     cout << "# of convolutions: " << hidden_weights.size() << endl;
-    int c_itr = 0; // convolution counter
-    for (auto c = hidden_layer_type.begin(); c != hidden_layer_type.end(); c++) { // loop over each convolution
+    int c_idx = 0; // convolution counter
 
-        cout << "# of filters for conv " << c_itr << " : " << hidden_weights[c_itr].size() << endl;
+    for (auto c_type = hidden_layer_type.begin(); c_type != hidden_layer_type.end(); c_type++) { // loop over each convolution
 
-        for (int m = 0; m < (*c)(nn::depth); m++){ // loop over each filter of the convolution
+        cout << "# of filters for conv " << c_idx << " : " << hidden_weights[c_idx].size() << endl;
+
+        for (int m = 0; m < (*c_type)(nn::depth); m++){ // loop over each filter of the convolution
 
             int N = 1;
             if (!param_share_layer && !param_share_depth) {
-                N = (input_type[nn::height]*input_type[nn::width] - (*c)(nn::F) + 2*(*c)(nn::P))/(*c)(nn::S) + 1;
+                if (c_idx == 0) {
+                    N = (input_type[height]*input_type[width] - (*c_type)(nn::F) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
+                }
+                else {
+                    N = ((*(c_type-1))(height)*(*(c_type-1))(width) - (*c_type)(nn::F) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
+                }
             }
-            cout << "# of neurons for conv " << c_itr << " and filter " << m << " : " << hidden_weights[c_itr][m].size() << endl; // for a certain covolution and filter, specify the number neurons for that filter
+            if (N != round(N)) {
+                cout << "Error: number of neurons not obtainable.\n";
+                cout << "Check hyperparameters of layer.";
+                cout << "N: " << N << endl;
+            }
+            
+            cout << "# of weight tensors for conv " << c_idx << " and filter " << m << " : " << hidden_weights[c_idx][m].size() << endl; // for a certain covolution and filter, specify the number neurons for that filter
 
             // int N = 1; // all neurons will have the same weights..
 
             for (int n = 0; n < N; n++) { // one loop to produce weights for neurons of the filter
                 
-                cout << "# of input depth for conv " << c_itr << " and filter " << m << " and neuron " << n << " : " << hidden_weights[c_itr][m][n].size() << endl;; // for a certain convolution, filter, and neuron, specify the depth of the input
+                int Depth = 0;
+                
+                if (c_idx ==  0) {
+                    Depth = input_type[depth];
+                    hidden_weights[c_idx][m][n].resize(Depth); // for a certain convolution, filter, and neuron, specify the depth of the input
+                    bias[c_idx][m][n].resize(Depth);
+                }
+                else {
+                    Depth = hidden_weights[c_idx-1].size();
+                    hidden_weights[c_idx][m][n].resize(Depth); // for a certain convolution, filter, and neuron, specify the depth of the input
+                    bias[c_idx][m][n].resize(Depth);
+                }
 
-                for (int d = 0; d < input_type[nn::depth]; d++) { // loop over all input depths
-                    
-                    random_device rd;
-                    mt19937 gen(rd());
-                    uniform_real_distribution<> distr(-1,1);
+                cout << "# of input depth for conv " << c_idx << " and filter " << m << " and neuron " << n << " : " << hidden_weights[c_idx][m][n].size() << endl;; // for a certain convolution, filter, and neuron, specify the depth of the input
 
-                    if ((*c)(nn::F) == 1) { // if the filter size is of size 1
-                        // cout << 5 << endl;
-                        // cout << (*c)(nn::F) << endl;
-                        hidden_weights[c_itr][m][n][d].resize((*c)(nn::F), 1); // for a conv, filter, neuron, and input depth, specify the weight matrix
-                        // cout << hidden_weights[c_itr][m][n][d].rows() << endl;
-                        // cout << hidden_weights[c_itr][m][n][d].cols() << endl;
-                        // cout << distr(gen) << endl;
-                        hidden_weights[c_itr][m][n][d](0,0) = distr(gen);
-                    }
+                for (int d = 0; d < Depth; d++) { // loop over all input depths
 
-                    else { // if filter is greater than 1... next size should be 4 (2x2 filter)
-                        
-                        hidden_weights[c_itr][m][n][d].resize((*c)(nn::F)/2, (*c)(nn::F)/2); // for a conv, filter, neuron, and input depth, specify the weight matrix
-
-                        for(int i = 0; i < hidden_weights[c_itr][m][n][d].rows(); i++) { // loop over each weight and assign it a random # between -1, 1
-
-                            for(int j = 0; j < hidden_weights[c_itr][m][n][d].cols(); j++) {
-
-                                hidden_weights[c_itr][m][n][d](i,j) = distr(gen);
-                            }
-                        }
-                    }
-                    cout << "# of weights for conv " << c_itr << " and filter " << m << " and neuron " << n << " and depth " << d << " : " << hidden_weights[c_itr][m][n][d].size() << endl;
+                    cout << "# of weights for conv " << c_idx << " and filter " << m << " and neuron " << n << " and depth " << d << " : " << hidden_weights[c_idx][m][n][d].size() << endl;
+                    cout << "# of biases for conv " << c_idx << " and filter " << m << " and neuron " << n << " and depth " << d << " : " << bias[c_idx][m][n].size() << endl;
                 }
             }
         }
-        c_itr++; // increase convolution pointer
+        c_idx++; // increase convolution pointer
     }
 }
 
 void nn::nn::print_hidden_weights(bool param_share_layer, bool param_share_depth) {
 
-    int c_itr = 0; // convolution counter
-    for (auto c = hidden_layer_type.begin(); c != hidden_layer_type.end(); c++) { // loop over each convolution
+    int c_idx = 0; // convolution counter
+    for (auto c_type = hidden_layer_type.begin(); c_type != hidden_layer_type.end(); c_type++) { // loop over each convolution
 
-        for (int m = 0; m < (*c)(nn::depth); m++){ // loop over each filter of the convolution
+        for (int m = 0; m < (*c_type)(nn::depth); m++){ // loop over each filter of the convolution
 
             int N = 1;
             if (!param_share_layer && !param_share_depth) {
-                N = (input_type[nn::height]*input_type[nn::width] - (*c)(nn::F) + 2*(*c)(nn::P))/(*c)(nn::S) + 1;
+                if (c_idx == 0) {
+                    N = (input_type[height]*input_type[width] - (*c_type)(nn::F) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
+                }
+                else {
+                    N = ((*(c_type-1))(height)*(*(c_type-1))(width) - (*c_type)(nn::F) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
+                }
+            }
+            if (N != round(N)) {
+                cout << "Error: number of neurons not obtainable.\n";
+                cout << "Check hyperparameters of layer.";
+                cout << "N: " << N << endl;
             }
             
             for (int n = 0; n < N; n++) { // one loop to produce weights for neurons of the filter
-                
-                for (int d = 0; d < input_type[nn::depth]; d++) { // loop over all input depths
-                    
-                    random_device rd;
-                    mt19937 gen(rd());
-                    uniform_real_distribution<> distr(-1,1);
-
-                    if ((*c)(nn::F) == 1) { // if the filter size is of size 1
-                        // cout << 5 << endl;
-                        // cout << (*c)(nn::F) << endl;
-                        hidden_weights[c_itr][m][n][d].resize((*c)(nn::F), 1); // for a conv, filter, neuron, and input depth, specify the weight matrix
-                        // cout << hidden_weights[c_itr][m][n][d].rows() << endl;
-                        // cout << hidden_weights[c_itr][m][n][d].cols() << endl;
-                        // cout << distr(gen) << endl;
-                        hidden_weights[c_itr][m][n][d](0,0) = distr(gen);
-                    }
-
-                    else { // if filter is greater than 1... next size should be 4 (2x2 filter)
-                        
-                        hidden_weights[c_itr][m][n][d].resize((*c)(nn::F)/2, (*c)(nn::F)/2); // for a conv, filter, neuron, and input depth, specify the weight matrix
-
-                        for(int i = 0; i < hidden_weights[c_itr][m][n][d].rows(); i++) { // loop over each weight and assign it a random # between -1, 1
-
-                            for(int j = 0; j < hidden_weights[c_itr][m][n][d].cols(); j++) {
-
-                                hidden_weights[c_itr][m][n][d](i,j) = distr(gen);
-                            }
-                        }
-                    }
-
-                }
-                for(auto zebra : hidden_weights[c_itr][m][n]) {
-                    cout << "Conv: " << c_itr << " filter: " << m << " neuron: " << n << endl;
+                int d = 0;
+                for(auto zebra : hidden_weights[c_idx][m][n]) {
+                    cout << "Conv: " << c_idx << " filter: " << m << " neuron: " << n << " depth: " << d << endl;
                     cout << zebra << endl;
+                    // cout << 
+                    d++;
                 }
+
             }
         }
-        c_itr++; // increase convolution pointer
+        c_idx++; // increase convolution pointer
     }
 }
 

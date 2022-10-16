@@ -9,9 +9,13 @@
 ../library/base.h
 Eigen/Dense
 -
+Eigen/Core
+-
 vector
 -
 iostream
+-
+Eigen/Core
 -
 
 /home/mason/Neurons/source/run.cpp
@@ -19,7 +23,7 @@ iostream
 -
 base.h
 /home/mason/Neurons/source/base.h
-Eigen/Dense
+Eigen/Core
 -
 vector
 -

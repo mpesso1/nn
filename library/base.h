@@ -1,8 +1,10 @@
 #ifndef BASE_H
 #define BASE_H
 #include <Eigen/Dense>
+#include <Eigen/Core>
 #include <vector>
 #include <iostream>
+#include <Eigen/Core>
 
 /**
  * @brief 
@@ -26,14 +28,14 @@ namespace nn
         ~idx();
 
         enum w_idx {HEIGHT, WIDTH, DEPTH, ACTIVATION, F, P, S};
-        enum act_idx {RELU, TANH, SIGMOID};
-        enum i_idx {HEIGHT, WIDTH, DEPTH};
-        enum o_idx {HEIGHT, WIDTH, DEPTH, ACTIVATION};
+        // enum act_idx {RELU, TANH, SIGMOID};
+        // enum i_idx {HEIGHT, WIDTH, DEPTH};
+        // enum o_idx {HEIGHT, WIDTH, DEPTH, ACTIVATION};
     };
     
     
 
-    class fp : public idx { 
+    class fp{ 
     private:
         enum Activation {RELU, TANH, SIGMOID};
 
@@ -48,7 +50,7 @@ namespace nn
         void sigmoid();
     };
 
-    class bp : public idx { // Back propogation
+    class bp{ // Back propogation
     private:
 
     public:
@@ -57,20 +59,31 @@ namespace nn
     };
 
 
-    class nn : public idx { // Neural Network
+    class nn{ // Neural Network
     private:
     // hyperparameters
         const Eigen::Matrix<int,3,1> input_type = Eigen::ArrayXXi::Zero(3,1); // (height, width, depth)
         const Eigen::Matrix<int,4,1> output_type = Eigen::ArrayXXi::Zero(4,1); // (height, width, depth, act func ENUM)
-        const vector<Eigen::Matrix<int,7,1>> hidden_layer_type {}; // ((filter_height0, filter_width0, filter_depth0, act func ENUM0, F0, P0, S0), (filter_height1, filter_width1, filter_depth1, act func ENUM1, F1, P1, S1), .... )
+        // Vector of convolution layer hyperparameters
+        vector<Eigen::Matrix<int,7,1>> hidden_layer_type {}; // ((filter_height0, filter_width0, filter_depth0, act func ENUM0, F0, P0, S0), (filter_height1, filter_width1, filter_depth1, act func ENUM1, F1, P1, S1), .... )
     
     // Memory
         // Weights
         vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights {{{{}}}}; // C(M(N(d(Fx x Fy))))
-        // Inputs
-        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> input_train {{}}; // B_idx(B_size(d(Fx x Fy)))
-        // Outputs
-        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> output_train {{}}; // B_idx(B_size(d(Fx x Fy)))
+        // Biases
+        vector< vector< vector< vector<float>>>> bias {{{{}}}}; // C(M(N(d(b))))
+        // Nueron Values
+        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> neuron_outputs {{}}; // C(M(Fx x Fy))
+        // Input
+        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> input_train {{}}; // b(d(matrix)) 
+        // Output
+        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> output_train {{}}; // b(d(matrix))
+        // Cost
+        vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>> cost {{}}; // b(d(matrix))
+
+    // System
+        bool parameter_sharing = true;
+        int batch_size = 0;
         
     public:
 
@@ -90,7 +103,7 @@ namespace nn
          * @param hidden_t define each hidden layers tensor size and activation function used
          * @param output_t define the output layer tensor size and the activaiton function used
          */
-        nn(const Eigen::Matrix<int,3,1>& input_t , const vector<Eigen::Matrix<int,7,1>>& hidden_t , const Eigen::Matrix<int,4,1>& output_t );   
+        nn(const Eigen::Matrix<int,3,1>& input_t , vector<Eigen::Matrix<int,7,1>>& hidden_t , const Eigen::Matrix<int,4,1>& output_t );   
 
 
         /**
@@ -99,8 +112,13 @@ namespace nn
          */
         ~nn();
 
+        // void setup();
 
-        void init_input();
+
+        void activate(float&,int);
+
+
+        void init_neurons();
 
 
         void init_output();
@@ -108,8 +126,17 @@ namespace nn
 
         void init_weights(bool param_share_layer = true, bool param_share_depth = false);
 
+        // b(d(layer)) will take a batch of depth of layers
+        void forward(vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>&, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>&);
+
+        void backward();
+
+        void print_neuron_outputs();
+
+        void print_output();
+
         
-        void propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<vector<vector<vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>>> hw, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o);
+        void propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o);
 
 
         /**

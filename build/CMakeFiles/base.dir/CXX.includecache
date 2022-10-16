@@ -19,8 +19,12 @@ random
 /home/mason/Neurons/library/base.h
 Eigen/Dense
 -
+Eigen/Core
+-
 vector
 -
 iostream
+-
+Eigen/Core
 -
 
