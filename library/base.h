@@ -51,6 +51,7 @@ namespace nn
     // System
         bool parameter_sharing = true;
         int batch_size = 0;
+        bool memory_ready = false;
         
     public:
 
@@ -84,6 +85,10 @@ namespace nn
         Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> dloss(const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>&, const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>&, int);
 
         void calc_average_loss();
+
+        void plot_loss();
+
+        void print_loss();
 
         void print_neuron_outputs();
 

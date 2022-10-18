@@ -165,10 +165,13 @@ void nn::nn::init_output() {
 
 void nn::nn::init_cost() {
     cost.resize(batch_size);
+    cost_grad.resize(batch_size);
     for (int b = 0; b != batch_size; b++) {
         cost[b].resize(output_type(depth));
+        cost_grad[b].resize(output_type(depth));
         for (int d = 0; d != output_type(depth); d++) {
             cost[b][d] = Eigen::ArrayXXf::Zero(output_type(height),output_type(width));
+            cost_grad[b][d] = Eigen::ArrayXXf::Zero(output_type(height),output_type(width));
         }
     }
 }
@@ -182,13 +185,17 @@ void nn::nn::forward(vector< vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::D
 
     input_train = in;
 
-    batch_size = in.size();
-    nn::init_neurons();
-    cout << "\033[1;32m NEURONS SUCCESFULLY SET \033[0m\n";
-    init_output();
-    cout << "\033[1;37m OUTPUT SUCCESFULLY SET \033[0m\n";
-    init_cost();
-    cout << "\033[1;39m COST SUCCESFULLY SET \033[0m\n";
+    if (!memory_ready) {
+        batch_size = in.size();
+        nn::init_neurons();
+        cout << "\033[1;32m NEURONS SUCCESFULLY SET \033[0m\n";
+        init_output();
+        cout << "\033[1;37m OUTPUT SUCCESFULLY SET \033[0m\n";
+        init_cost();
+        cout << "\033[1;39m COST SUCCESFULLY SET \033[0m\n";
+
+        memory_ready = true;
+    }
 
     int j_ref = 0; // to be used later.. sollution to parameter sharing
     int i_ref = 0; // to be used later..
@@ -200,14 +207,14 @@ void nn::nn::forward(vector< vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::D
     for (int b = 0; b != batch_size; b ++) {
         
         for (auto c = hidden_weights.begin(); c != hidden_weights.end(); c++) { // loop over convolutions
-            
+
             store.resize(c->size()); // set size to the number of filters of the convolution
 
             int filter_dem = hidden_layer_type[c_idx](F);
             
             m_idx = 0;
             for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of convolution
-                
+
                 store[m_idx] = Eigen::ArrayXXf::Zero(neuron_outputs[b][c_idx][m_idx].size(),1); // set the size of matrix to number of nerons in the filter
 
                 w_idx = 0;
@@ -253,14 +260,14 @@ void nn::nn::forward(vector< vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::D
                 m_idx++;
             }
 
-            cout << "Neuron outputs for conv: " << c_idx << endl;
-            print_neuron_outputs();
+            // cout << "Neuron outputs for conv: " << c_idx << endl;
+            // print_neuron_outputs();
             c_idx++;
         
         }
 
-        cout << "OUTPUT: " << endl;
-        print_output();
+        // cout << "OUTPUT: " << endl;
+        // print_output();
     
     }
 
@@ -292,6 +299,8 @@ void nn::nn::backward() {
             dX_in.resize(c->size(), Eigen::ArrayXXf::Zero(hidden_layer_type[c_idx](height),hidden_layer_type[c_idx](width))); // set the size of gradient input to current depth
             if (c_idx == hidden_weights.size()-1) { // if on the first layer of back propogation then input is cost gradient
                 dX_in = cost_grad[b];
+                cout << "COST_GRAD: " << dX_in[0] << endl;
+                cout << "Size of cost grad: " << dX_in.size() << endl;
             }
             else {
                 dX_in = dX_out;
@@ -433,10 +442,17 @@ Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> nn::nn::loss(const Eigen::Mat
     switch (func)
     {
     case LS_LOSS:
-        loss_tot = (1/2 * (des - out).cwiseProduct((des - out))).sum();
-        return (1/2 * (des - out).cwiseProduct((des - out)));
+        loss_tot = 0.5 * (-(des - out).cwiseProduct(-(des - out))).sum();
+        // cout << "loss tot: " << loss_tot << endl;
+        // cout << "des: " << des << endl;
+        // cout << "out: " << out << endl;
+        // cout << "des-out: " << des-out << endl;
+        // cout << "product: " << (des - out).cwiseProduct((des - out)) << endl;
+        // cout << "sum: " << (des - out).cwiseProduct((des - out)).sum() << endl;
+        return 0.5 * (-(des - out).cwiseProduct(-(des - out)));
 
     default:
+        cout << "Loss funtion undetectable\n";
         break;
     }
 }
@@ -445,15 +461,28 @@ Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> nn::nn::dloss(const Eigen::Ma
     switch (func)
     {
     case LS_LOSS:
-        return (des - out);
+        return -(des - out) * 0.0001;
 
     default:
+        cout << "Loss function undetectable\n";
         break;
     }
 }
 
 void nn::nn::calc_average_loss() {
+    cout << "loss tot: " << loss_tot << endl;
+    cout << (cost.size()*cost[0].size()*cost[0][0].size()) << endl;
     loss_avg = loss_tot / (cost.size()*cost[0].size()*cost[0][0].size());
+}
+
+void nn::nn::plot_loss() {
+    system("python3 plot_loss.py");
+}
+
+void nn::nn::print_loss() {
+    calc_average_loss();
+    cout << "LOSS: " << loss_avg << endl;
+    cout << "cost_grad here: " << cost_grad[0][0]<<endl;
 }
 
 void nn::nn::print_neuron_outputs() {
