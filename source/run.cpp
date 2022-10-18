@@ -16,7 +16,7 @@ int main() {
         layer(0,0) = 3; // height
         layer(1,0) = 3; // width
         layer(2,0) = 4; // depth
-        layer(3,0) = 0; // activation function
+        layer(3,0) = 1; // activation function
         layer(4,0) = 2; // F
         layer(5,0) = 0; // P
         layer(6,0) = 1; // S
@@ -49,7 +49,9 @@ int main() {
     vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> test_out2 {test_out1};
 
     FC_ptr->forward(test_o2, test_out2);
+    FC_ptr->backward();
 
+    // FC_ptr->print_hidden_weights();
 
 
     // vector<float> tt {0,1,2,3,4};

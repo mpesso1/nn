@@ -1,7 +1,4 @@
 #include "base.h"
-#include <iostream>
-#include <vector>
-#include <random>
 
 /**
  * @brief 
@@ -32,9 +29,6 @@ nn::nn::nn(const Eigen::Matrix<int,3,1>& input, vector<Eigen::Matrix<int,7,1>>& 
         
         nn::init_weights();
         cout << "\033[1;34m WEIGHTS SUCCESFULLY SET \033[0m\n";
-        
-        nn::init_neurons();
-        cout << "\033[1;32m NEURONS SUCCESFULLY SET \033[0m\n";
     }
 
 /**
@@ -42,7 +36,6 @@ nn::nn::nn(const Eigen::Matrix<int,3,1>& input, vector<Eigen::Matrix<int,7,1>>& 
  * 
  */
 nn::nn::~nn() {}
-
 
 /**
  * @brief init weights to random values C(M(N(d(Fx x Fy)))) vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights
@@ -67,6 +60,7 @@ void nn::nn::init_weights(bool param_share_layer, bool param_share_depth) {
 
             int N = 1;
             if (!param_share_layer && !param_share_depth) {
+                cout << "HEYYY WTF\n";
                 if (c_idx == 0) {
                     N = (input_type[height]*input_type[width] - pow((*c_type)(nn::F),2) + 2*(*c_type)(nn::P))/(*c_type)(nn::S) + 1;
                 }
@@ -80,7 +74,7 @@ void nn::nn::init_weights(bool param_share_layer, bool param_share_depth) {
                 cout << "Check hyperparameters of layer.\n";
                 cout << "N: " << N << endl;
             }
-
+            // cout << "N: " << N << endl;
             hidden_weights[c_idx][m].resize(N); // for a certain convolution and filter, specify the number of neurons for that filter
             bias[c_idx][m].resize(N);
 
@@ -132,109 +126,31 @@ void nn::nn::init_weights(bool param_share_layer, bool param_share_depth) {
     }
 };
 
-
 void nn::nn::init_neurons() {
-    
-    neuron_outputs.resize(hidden_layer_type.size()); // resize to the number of convolutions
 
-    int c_idx = 0; // convolution counter
+    neuron_outputs.resize(batch_size);
+    int b_idx = 0;
 
-    for (auto c = neuron_outputs.begin(); c != neuron_outputs.end(); c++) { // loop through each convolution
-
-        neuron_outputs[c_idx].resize(hidden_layer_type[c_idx](depth)); // resize to the number of filters in the convolution
-
-        for (auto m = c->begin(); m != c->end(); m++) { // loop through each filter of the convolution
-
-            (*m) = Eigen::ArrayXXf::Zero( hidden_layer_type[c_idx](height), hidden_layer_type[c_idx](width) ); // define filter height and width
-            // cout << m->rows() << "," << m->cols() << endl;  // check the number of rows and columns is correct
-        }
-
-        c_idx++; // increment the 
-    
-    }
-}
-
-
-void nn::nn::forward(vector< vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>& in, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>& out) {
-    int c_idx = 0; // convolution
-    int m_idx = 0; // filter
-    int n_idx = 0; // neuron
-    int d_idx = 0; // input depth
-    int w_idx = 0; // weight / weight matrix
-
-    batch_size = in.size();
-    init_output();
-    cout << "\033[1;37m OUTPUT SUCCESFULLY SET \033[0m\n";
-
-    int b {}; // temporary
-
-    int j_ref = 0; // to be used later.. sollution to parameter sharing
-    int i_ref = 0; // to be used later..
-
-    vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> store;
-    for (auto c = hidden_weights.begin(); c != hidden_weights.end(); c++) { // loop over convolutions
+    for (auto b = neuron_outputs.begin(); b != neuron_outputs.end(); b++) {
         
-        store.resize(c->size()); // set size to the number of filters of the convolution
+        neuron_outputs[b_idx].resize(hidden_layer_type.size()); // resize to the number of convolutions
 
-        int filter_dem = hidden_layer_type[c_idx](F);
-        
-        m_idx = 0;
-        for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of convolution
-            
-            store[m_idx] = Eigen::ArrayXXf::Zero(neuron_outputs[c_idx][m_idx].size(),1); // set the size of matrix to number of nerons in the filter
-            // cout << "m\n";
-            w_idx = 0;
-            for (auto n = m->begin(); n != m->end(); n++) { // loop over each neuron of filter
-                
-                // loop over input
-                n_idx = 0;
-                for (int j = 0; j != neuron_outputs[c_idx][m_idx].cols(); j++) { // loop over width of input
-                    for (int i = 0; i != neuron_outputs[c_idx][m_idx].rows(); i++) { // loop over height of input
-                        // cout << "n\n";
-                        
-                        
-                        d_idx = 0;
-                        for (auto d = n->begin(); d != n->end(); d++) { // loop over each input depth
-                            // cout << ((in[b][d_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx] << endl;
-                            // cout << (in[b][d_idx].block(i,j,filter_dem,filter_dem)).size() << endl;
-                            if (c_idx == 0) {
-                                // cout << "p\n";
-                                // cout << bias[c_idx][m_idx][w_idx][d_idx] << endl;
-                                store[m_idx](n_idx,0) += ((in[b][d_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx];
-                                // cout << "e\n";
-                            }
-                            else {
-                                
-                                store[m_idx](n_idx,0) += ((neuron_outputs[c_idx-1][m_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx];
-                            }
-                            activate(store[m_idx](n_idx,0), hidden_layer_type[c_idx](act));
-                            d_idx++;
-                        }
-                        n_idx++;
-                    }
-                }
+        int c_idx = 0; // convolution counter
 
-                neuron_outputs[c_idx][m_idx] = store[m_idx].reshaped(sqrt(neuron_outputs[c_idx][m_idx].size()), sqrt(neuron_outputs[c_idx][m_idx].size()));
-                if (c_idx == (hidden_weights.size() - 1)) {
-                    output_train[b][m_idx] = neuron_outputs[c_idx][m_idx];
-                    cost[b][m_idx] = output_train[b][m_idx] - out[b][m_idx]; // NEEDS MORE ABILITY... calculate the cost comparing the output to the desired output specified
-                }
-                w_idx++;
+        for (auto c = b->begin(); c != b->end(); c++) { // loop through each convolution
+
+            neuron_outputs[b_idx][c_idx].resize(hidden_layer_type[c_idx](depth)); // resize to the number of filters in the convolution
+
+            for (auto m = c->begin(); m != c->end(); m++) { // loop through each filter of the convolution
+
+                (*m) = Eigen::ArrayXXf::Zero( hidden_layer_type[c_idx](height), hidden_layer_type[c_idx](width) ); // define filter height and width
+                // cout << m->rows() << "," << m->cols() << endl;  // check the number of rows and columns is correct
             }
-            m_idx++;
+
+            c_idx++; // increment the 
+        
         }
-        cout << "Neuron outputs for conv: " << c_idx << endl;
-        print_neuron_outputs();
-        c_idx++;
     }
-
-    cout << "OUTPUT: " << endl;
-    print_output();
-    
-}
-
-void nn::nn::backward() {
-
 }
 
 void nn::nn::init_output() {
@@ -247,21 +163,305 @@ void nn::nn::init_output() {
     }
 }
 
-void nn::nn::activate(float& val, int func) {
-    if (func == 0) {
-        if (val>0) {
-            val = val;
-        }
-        else {
-            val = 0;
+void nn::nn::init_cost() {
+    cost.resize(batch_size);
+    for (int b = 0; b != batch_size; b++) {
+        cost[b].resize(output_type(depth));
+        for (int d = 0; d != output_type(depth); d++) {
+            cost[b][d] = Eigen::ArrayXXf::Zero(output_type(height),output_type(width));
         }
     }
 }
 
+void nn::nn::forward(vector< vector< Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>& in, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>>& out) {
+    int c_idx = 0; // convolution
+    int m_idx = 0; // filter
+    int n_idx = 0; // neuron
+    int d_idx = 0; // input depth
+    int w_idx = 0; // weight / weight matrix
+
+    input_train = in;
+
+    batch_size = in.size();
+    nn::init_neurons();
+    cout << "\033[1;32m NEURONS SUCCESFULLY SET \033[0m\n";
+    init_output();
+    cout << "\033[1;37m OUTPUT SUCCESFULLY SET \033[0m\n";
+    init_cost();
+    cout << "\033[1;39m COST SUCCESFULLY SET \033[0m\n";
+
+    int j_ref = 0; // to be used later.. sollution to parameter sharing
+    int i_ref = 0; // to be used later..
+
+    loss_tot = 0;
+
+    vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> store;
+    
+    for (int b = 0; b != batch_size; b ++) {
+        
+        for (auto c = hidden_weights.begin(); c != hidden_weights.end(); c++) { // loop over convolutions
+            
+            store.resize(c->size()); // set size to the number of filters of the convolution
+
+            int filter_dem = hidden_layer_type[c_idx](F);
+            
+            m_idx = 0;
+            for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of convolution
+                
+                store[m_idx] = Eigen::ArrayXXf::Zero(neuron_outputs[b][c_idx][m_idx].size(),1); // set the size of matrix to number of nerons in the filter
+
+                w_idx = 0;
+                for (auto n = m->begin(); n != m->end(); n++) { // loop over each neuron of filter
+
+                    // loop over input
+                    n_idx = 0;
+                    for (int j = 0; j != neuron_outputs[b][c_idx][m_idx].cols(); j++) { // loop over width of input
+                        for (int i = 0; i != neuron_outputs[b][c_idx][m_idx].rows(); i++) { // loop over height of input
+                            
+                            d_idx = 0;
+                            for (auto d = n->begin(); d != n->end(); d++) { // loop over each input depth
+
+                                if (c_idx == 0) {
+
+                                    store[m_idx](n_idx,0) += ((in[b][d_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx];
+                                
+                                }
+                                else {
+                                    
+                                    store[m_idx](n_idx,0) += ((neuron_outputs[b][c_idx-1][m_idx].block(i,j,filter_dem,filter_dem)).cwiseProduct((*d))).sum() + bias[c_idx][m_idx][w_idx][d_idx];
+                                
+                                }
+                                
+                                activate(store[m_idx](n_idx,0), hidden_layer_type[c_idx](act));
+                                
+                                d_idx++;
+                            }
+                            n_idx++;
+                        }
+                    }
+
+                    neuron_outputs[b][c_idx][m_idx] = store[m_idx].reshaped(sqrt(neuron_outputs[b][c_idx][m_idx].size()), sqrt(neuron_outputs[b][c_idx][m_idx].size()));
+                    if (c_idx == (hidden_weights.size() - 1)) {
+                        
+                        output_train[b][m_idx] = neuron_outputs[b][c_idx][m_idx];
+                        cost[b][m_idx] = loss(output_train[b][m_idx], out[b][m_idx], output_type(act));
+                        cost_grad[b][m_idx] = dloss(output_train[b][m_idx], out[b][m_idx], output_type(act));
+                    
+                    }
+                    w_idx++;
+                }
+                m_idx++;
+            }
+
+            cout << "Neuron outputs for conv: " << c_idx << endl;
+            print_neuron_outputs();
+            c_idx++;
+        
+        }
+
+        cout << "OUTPUT: " << endl;
+        print_output();
+    
+    }
+
+    cout << "\033[1;30m FORWARD SUCCESFULL \033[0m\n";
+
+}
+
+void nn::nn::backward() {
+    int c_idx {}; // convolution
+    int m_idx {}; // filter
+    int n_idx {}; // neuron
+    int d_idx {}; // input depth
+    int w_idx {}; // weight / weight matrix
+
+    vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> dW = hidden_weights;
+    vector< vector< vector< vector<float>>>> dB = bias;
+    vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> dX_in;
+    vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> dX_out;
+
+
+    for (int b = 0; b != batch_size; b++) {
+        
+        c_idx = hidden_weights.size()-1; // convolution
+        for (auto c = hidden_weights.end()-1; c != hidden_weights.begin()-1; c--) { // for each convolution. c->size() := number of filters in conv / depth of conv
+            
+            int filter_dem = hidden_layer_type[c_idx](F); // filter size used to compute output neurons
+
+            // computationally messy needs to be cleaned... shouldnt be copying this much... same goes for dW and dB
+            dX_in.resize(c->size(), Eigen::ArrayXXf::Zero(hidden_layer_type[c_idx](height),hidden_layer_type[c_idx](width))); // set the size of gradient input to current depth
+            if (c_idx == hidden_weights.size()-1) { // if on the first layer of back propogation then input is cost gradient
+                dX_in = cost_grad[b];
+            }
+            else {
+                dX_in = dX_out;
+            }
+            if (c_idx != 0) { // no need to set output once we reach the inputs of forward propogation.. will just be updating the weights
+                dX_out.resize((c-1)->size(), Eigen::ArrayXXf::Zero(hidden_layer_type[c_idx-1](height),hidden_layer_type[c_idx-1](width))); // set ouput gradient to the size of input depth on forward prop.
+                // could also get the same value from current n->size() but dont want to be iterativley re calling size and potentially changing values
+            }
+            // --
+
+            m_idx = c->size()-1;
+            for (auto m = c->end()-1; m != c->begin()-1; m--) { // for each filter. m->size() := number of weight matrices in filter
+                
+                w_idx = m->size()-1;
+                for (auto n = m->end()-1; n != m->begin()-1; n--) { // for each weight matrix. n->size() := depth of the input neurons to the filter
+
+                        n_idx = neuron_outputs[b][c_idx][m_idx].size()-1;
+                        for (int j = 0; j != neuron_outputs[b][c_idx][m_idx].cols(); j++) { // for width of matrix
+                            for (int i = 0; i != neuron_outputs[b][c_idx][m_idx].rows(); i++) { // for height of matrix
+                                
+                                d_idx = n->size()-1;   
+                                for (auto d = n->end()-1; d != n->begin()-1; d--) { // 
+
+                                    if (c_idx != 0) {
+                                        
+                                        dX_out[d_idx].block(i,j,filter_dem,filter_dem) += ((*d)* dX_in[m_idx](i,j)).cwiseProduct(deactivate(neuron_outputs[b][c_idx-1][m_idx].block(i,j,filter_dem,filter_dem), hidden_layer_type[c_idx](act)));
+                                        dW[c_idx][m_idx][w_idx][d_idx] -= neuron_outputs[b][c_idx-1][d_idx].block(i,j,filter_dem,filter_dem) * dX_in[m_idx](i,j);
+                                    
+                                    }
+                                    else {
+                                        
+                                        dW[c_idx][m_idx][w_idx][d_idx] -= input_train[b][d_idx].block(i,j,filter_dem,filter_dem) * dX_in[m_idx](i,j);
+                                    
+                                    }
+                                    
+                                    dB[c_idx][m_idx][w_idx][d_idx] -= dX_in[m_idx](i,j);
+                                    
+                                    d_idx--;
+                                }
+                                n_idx--;
+                            }
+                        } 
+                    w_idx--;
+                }
+                m_idx--;
+            }
+            c_idx--;
+        }   
+    }
+
+    hidden_weights = dW;
+    bias = dB;
+
+    cout << "\033[1;30m BACKWARD SUCCESFULL \033[0m\n";
+
+}
+
+void nn::nn::activate(float& val, int func) {
+    switch (func) {
+        case LINEAR:
+            val = val;
+            break;
+
+        case RELU:
+            if (val>0) {
+                val = val;
+            }
+            else {
+                val = 0;
+            }
+            break;
+
+        case TANH:
+            val = tanh(val);
+            break;
+            
+        case SIGMOID:
+            val = 1 / (1 + exp(-val));
+            break;
+        
+        default:
+            break;
+    }
+}
+
+Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> nn::nn::deactivate(const Eigen::Block<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>& val, int func) {
+    Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> buff = Eigen::ArrayXXf::Zero(val.rows(),val.cols());
+    
+    float revert {};
+    
+    switch (func)
+    {
+    case LINEAR:
+        for (int i = 0; i != val.rows(); i++) {
+            for (int j = 0; j != val.cols(); j++) {
+                buff(i,j) = 1;
+            }
+        }
+        break;
+
+    case RELU:
+        for (int i = 0; i != val.rows(); i++) {
+            for (int j = 0; j != val.cols(); j++) {
+                if (val(i,j) == 0) {
+                    buff(i,j) = 0;
+                }
+                else {
+                    buff(i,j) = 1;
+                }
+            }
+        }
+        break;
+
+    case TANH:
+        for (int i = 0; i != val.rows(); i++) {
+            for (int j = 0; j != val.cols(); j++) {
+                revert = atanh(val(i,j));
+                buff(i,j) = 1 - tanh(revert)*tanh(revert);
+            }
+        }
+        break;
+
+    case SIGMOID:
+        for (int i = 0; i != val.rows(); i++) {
+            for (int j = 0; j != val.cols(); j++) {
+                revert = -log(1-val(i,j));
+                buff(i,j) = 1/(1-exp(-revert)) * (1 - (1/(1-exp(-revert))));
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    return buff;
+}
+
+Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> nn::nn::loss(const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>& out, const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>& des, int func) {
+    switch (func)
+    {
+    case LS_LOSS:
+        loss_tot = (1/2 * (des - out).cwiseProduct((des - out))).sum();
+        return (1/2 * (des - out).cwiseProduct((des - out)));
+
+    default:
+        break;
+    }
+}
+
+Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic> nn::nn::dloss(const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>& out, const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>& des, int func) {
+    switch (func)
+    {
+    case LS_LOSS:
+        return (des - out);
+
+    default:
+        break;
+    }
+}
+
+void nn::nn::calc_average_loss() {
+    loss_avg = loss_tot / (cost.size()*cost[0].size()*cost[0][0].size());
+}
+
 void nn::nn::print_neuron_outputs() {
-    for (auto& c : neuron_outputs) {
-        for (auto& m : c) {
-            cout << m.transpose() << endl;
+    for (auto& b : neuron_outputs) {
+        for (auto& c : b) {
+            for (auto& m : c) {
+                cout << m.transpose() << endl;
+            }
         }
     }
 }
@@ -272,68 +472,6 @@ void nn::nn::print_output() {
             cout << d << endl;
         }
     }
-}
-
-void nn::nn::train(vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> input, vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> output, int batch) {
-    if (input.size() != output.size()) {
-        cout << "Input data size: " << input.size() << endl;
-        cout << "Output data size: " << output.size() << endl;
-        cout << "MUST MATCH\n";
-        return;
-    }
-    else {
-
-    }
-}
-
-
-void nn::nn::propogate(vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> i, vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> o) {
-
-    int c_itr = 0; // convolution counter
-    int d_idx = 0; // input depth counter
-    int m_idx = 0; // filter depth counter
-    int n_idx = 0; // ountput neuron counter
-    auto neuron_input = i;
-    int N = 0;
-    vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> next_input {};
-
-    // vector<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> next_input{};
-
-    for (auto c = hidden_weights.begin(); c != hidden_weights.end(); c++) { // loop over each convolution
-        for (auto m = c->begin(); m != c->end(); m++) { // loop over each filter of the convolution
-            for(auto n = m->begin(); n != m->end(); n++) {
-                next_input.resize(nn::height);
-
-                if (n->size() == 1) { // parameter sharing... only one weight matrix for each filter
-                    int filter_dem = sqrt(hidden_layer_type[c_itr](nn::F));
-                    for (int i = 0; i != hidden_layer_type[c_itr](nn::width); i++) {
-                        for (int j = 0; j != hidden_layer_type[c_itr](nn::height); j++) {
-                            for (auto d = n->begin(); d != n->end(); d++) {
-                                next_input[m_idx](n_idx) += (neuron_input[d_idx].block(i,j,filter_dem,filter_dem).cwiseProduct((*d))).sum();
-                            }
-                        }
-                    }
-                }
-                else if (n->size() > 1) { // no parameter sharing
-
-                }
-                else { // error
-
-                }
-                
-
-            }
-            next_input[m_idx].reshaped<Eigen::RowMajor>(sqrt(m->size()),sqrt(m->size()));
-
-            m_idx++;
-        }
-        c_itr++; // increase convolution pointer
-    }
-}
-
-
-vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> nn::nn::get_hidden_weights(){
-    return hidden_weights;
 }
 
 void nn::nn::print_layer_sizes(bool param_share_layer, bool param_share_depth ) {
@@ -431,29 +569,18 @@ void nn::nn::print_hidden_weights(bool param_share_layer, bool param_share_depth
     }
 }
 
-// print network hyperparameters
 void nn::nn::print_network() {
     cout << "INPUT: " << input_type.transpose() << endl;
     cout << "OUTPUT: " << output_type.transpose() << endl;
     nn::nn::print_hidden_layers();
 }
 
-// print hidden layer hyperparameters
 void nn::nn::print_hidden_layers() {
     cout << "HIDDEN: \n";
     for (auto idx = hidden_layer_type.begin(); idx != hidden_layer_type.end(); idx++) {
         cout << (*idx).transpose() << endl;
     }
 }
-
-
-
-nn::fp::fp() {}
-nn::fp::~fp() {}
-
-nn::bp::bp() {}
-nn::bp::~bp() {}
-// int nn::nn::print_num(int num) { std::cout << num << std::endl; }
 
 
 
