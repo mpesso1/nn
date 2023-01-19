@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/run.dir/run.cpp.o"
+  "CMakeFiles/run.dir/__/library/communication/communication.cpp.o"
   "run.pdb"
   "run"
 )

@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/mason/Neurons/library/base.cpp
+base.hpp
+/home/mason/Neurons/library/base.hpp
+
+/home/mason/Neurons/library/base.hpp
+iostream
+-
+random
+-
+vector
+-
+Eigen/Dense
+-
+Eigen/Core
+-
+
+/home/mason/Neurons/library/communication/communication.cpp
+communication.hpp
+/home/mason/Neurons/library/communication/communication.hpp
+
+/home/mason/Neurons/library/communication/communication.hpp
+

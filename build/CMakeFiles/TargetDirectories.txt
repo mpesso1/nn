@@ -1,4 +1,10 @@
 /home/mason/Neurons/build/CMakeFiles/rebuild_cache.dir
+/home/mason/Neurons/build/CMakeFiles/libs.dir
 /home/mason/Neurons/build/CMakeFiles/edit_cache.dir
-/home/mason/Neurons/build/CMakeFiles/base.dir
-/home/mason/Neurons/build/CMakeFiles/run.dir
+/home/mason/Neurons/build/library/CMakeFiles/rebuild_cache.dir
+/home/mason/Neurons/build/library/CMakeFiles/edit_cache.dir
+/home/mason/Neurons/build/library/communication/CMakeFiles/rebuild_cache.dir
+/home/mason/Neurons/build/library/communication/CMakeFiles/edit_cache.dir
+/home/mason/Neurons/build/source/CMakeFiles/rebuild_cache.dir
+/home/mason/Neurons/build/source/CMakeFiles/run.dir
+/home/mason/Neurons/build/source/CMakeFiles/edit_cache.dir

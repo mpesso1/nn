@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/run.dir/source/run.cpp.o  -o run libbase.a 

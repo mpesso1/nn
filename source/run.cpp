@@ -1,11 +1,29 @@
 #include <iostream>
-#include "base.h"
+#include "base.hpp"
 #include <Eigen/Core>
-// #include "/usr/include/eigen-3.4.0/Eigen/src/Core/DenseBase.h"
 #include <vector>
 #include <memory>
 #include <random>
+#include <opencv2/core.hpp>
+#include </usr/include/opencv2/core/eigen.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <fstream>
+#include <boost/json.hpp>
+#include <boost/json/src.hpp>
+#include <boost/version.hpp>
+#include <boost/asio.hpp>
+// #include <boost/asio/io_service.hpp>
+// #include <boost/asio/io_context.hpp>
+// #include <boost/asio/steady_timer.hpp>
+
+void print(const boost::system::error_code& ) {
+    std::cout << "hello\n";
+}
+
+
 using namespace std;
+using namespace boost::json;
 
 int main() {
     const Eigen::Matrix<int,3,1> input {1,1,2}; // height, width, depth
@@ -47,6 +65,11 @@ int main() {
 
     // nn::nn FC = nn::nn(input, hidden, output);
     // FC.print_network();
+    std::cout << "Using Boost "     
+          << BOOST_VERSION / 100000     << "."  // major version
+          << BOOST_VERSION / 100 % 1000 << "."  // minor version
+          << BOOST_VERSION % 100                // patch level
+          << std::endl;
 
     unique_ptr<nn::nn> FC_ptr(new nn::nn(input,hidden,output));
 
@@ -60,6 +83,11 @@ int main() {
     // vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> test_out2 {test_out1};
 
     // FC_ptr->forward(test_o2, test_out2);
+    // std::cout << "Using Boost "     
+    //         << BOOST_VERSION / 100000     << "."  // major version
+    //         << BOOST_VERSION / 100 % 1000 << "."  // minor version
+    //         << BOOST_VERSION % 100                // patch level
+    //         << std::endl;
 
 
     Eigen::Matrix<float,1,1> test {1};
@@ -73,111 +101,42 @@ int main() {
     vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>> test_out1 {test_out,test_outb};
     vector<vector<Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>>> test_out2 {test_out1};
 
-    for (int i = 0; i != 100; i++) {
-        FC_ptr->forward(test_o2, test_out2);
-        FC_ptr->backward();
-        FC_ptr->print_loss();
-    }
-
-    // FC_ptr->print_loss();
-    // cout << "Mason\n";
-
-    // FC_ptr->print_hidden_weights();
-
-
-    // vector<float> tt {0,1,2,3,4};
-
-    // for (auto i = tt.end()-1; i != tt.begin()-1; i--) {
-    //     cout << *i << endl;
+    // for (int i = 0; i != 500; i++) {
+    //     FC_ptr->forward(test_o2, test_out2);
+    //     FC_ptr->backward();
+    //     FC_ptr->print_loss();
     // }
 
-    // auto test = FC_ptr->get_hidden_weights();
+    ofstream file_id;
+    file_id.open("file.txt");
 
-    // FC_ptr->print_layer_sizes();
-    // FC_ptr->print_hidden_weights();
-    // for (auto i : test) {
-    //     for (auto j : i) {
-    //         for (auto k : j) {
-    //             for (auto u : k) {
-    //                 cout << u << endl;
-    //             }
-    //         }
-    //     }
-    // }
+    // boost::json::value v;
 
-    // vector<float> i {0,1,2,3};
+    value v = {
+    { "pi", 3.141 },
+    { "happy", true },
+    { "name", "Boost" },
+    { "nothing", nullptr },
+    { "answer", {
+        { "everything", 42 } } },
+    {"list", {1, 0, 2}},
+    {"object", {
+        { "currency", "USD" },
+        { "value", 42.99 }
+            } }
+    };
 
-    // for (auto z : i) {
-    //     cout << z << endl;
-    // }
+    // cout << v << endl;
+    // boost::asio::io_service io;
+    boost::asio::io_context io;
+    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(5));
+    t.async_wait(&print);
+    cout << "Hey\n";
+    // t.wait();
+    io.run();
+    cout << "Hey\n";
 
-    // for(auto z = i.begin(); z != i.end(); z++) {
-    //     // cout << "Z: " << (*z) << endl;
-    //     // cout << "i.end(): " << (i.end() << endl;
-    //     cout << i.end() - z << endl;
-    //     // cout << (*z) << endl;
-    // }
-
-    // try {
-    //     cout << "Mason\n";
-    //     cout << << endl;
-    //     // cout << i << endl;
-    // } catch(...) {
-    //     cout << "Pesson" << endl;
-    // }
-
-
-
-    // vector<vector<vector<float>>> test;
-    // test.resize(3,vector<vector<float>>(4,vector<float>(5)));
-
-    // for (auto i : test) {
-    //     for (auto j : i) {
-    //         for (auto k : j) {
-    //             cout << k << endl;
-    //         }
-    //     }
-    // }
-
-
-
-    // Eigen::Matrix<float,3,3> m1 = Eigen::Array33f::Ones()*-1;
-    // Eigen::Matrix<float,3,3> m2 = Eigen::Array33f::Zero(3,3);
-
-    // cout << m1.cwiseProduct(m2) << endl;
-    // cout << m1.cwiseMax(m2) << endl;
-
-    // cout << Eigen::Rand::balanced
-    
-    // random_device rd;
-    // mt19937 gen(rd());
-    // uniform_real_distribution<> distr(-1,1);
-
-    // Eigen::Matrix<float,9,1> m;
-
-    // for (int i = 0; i != m.size(); i++) {
-    //     m(i,0) = i;
-    // }
-    // cout << m << endl;
-
-    // cout << m.reshaped<Eigen::RowMajor>(3,3) << endl;
-
-    // for (int i=0; i<10; i++) {
-    //     if (i == 3) {
-    //         if (i == 3)
-    //             continue;
-    //     }
-    //     cout << i << endl;
-    // }
-    
-    // FC.print_num(5);
     return 0;
 }
-
-
-
-
-
-
 
 

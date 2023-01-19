@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/mason/Neurons/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles /home/mason/Neurons/build/source/CMakeFiles/progress.marks
-	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 source/all
+	cd /home/mason/Neurons/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles /home/mason/Neurons/build/library/communication/CMakeFiles/progress.marks
+	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 library/communication/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 source/clean
+	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 library/communication/clean
 .PHONY : clean
 
 # The main clean target
@@ -97,87 +97,18 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 source/preinstall
+	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 library/communication/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 source/preinstall
+	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 library/communication/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
 	cd /home/mason/Neurons/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
-
-# Convenience name for target.
-source/CMakeFiles/run.dir/rule:
-	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 source/CMakeFiles/run.dir/rule
-.PHONY : source/CMakeFiles/run.dir/rule
-
-# Convenience name for target.
-run: source/CMakeFiles/run.dir/rule
-
-.PHONY : run
-
-# fast build rule for target.
-run/fast:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/build
-.PHONY : run/fast
-
-__/library/communication/communication.o: __/library/communication/communication.cpp.o
-
-.PHONY : __/library/communication/communication.o
-
-# target to build an object file
-__/library/communication/communication.cpp.o:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/__/library/communication/communication.cpp.o
-.PHONY : __/library/communication/communication.cpp.o
-
-__/library/communication/communication.i: __/library/communication/communication.cpp.i
-
-.PHONY : __/library/communication/communication.i
-
-# target to preprocess a source file
-__/library/communication/communication.cpp.i:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/__/library/communication/communication.cpp.i
-.PHONY : __/library/communication/communication.cpp.i
-
-__/library/communication/communication.s: __/library/communication/communication.cpp.s
-
-.PHONY : __/library/communication/communication.s
-
-# target to generate assembly for a file
-__/library/communication/communication.cpp.s:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/__/library/communication/communication.cpp.s
-.PHONY : __/library/communication/communication.cpp.s
-
-run.o: run.cpp.o
-
-.PHONY : run.o
-
-# target to build an object file
-run.cpp.o:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/run.cpp.o
-.PHONY : run.cpp.o
-
-run.i: run.cpp.i
-
-.PHONY : run.i
-
-# target to preprocess a source file
-run.cpp.i:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/run.cpp.i
-.PHONY : run.cpp.i
-
-run.s: run.cpp.s
-
-.PHONY : run.s
-
-# target to generate assembly for a file
-run.cpp.s:
-	cd /home/mason/Neurons/build && $(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/run.cpp.s
-.PHONY : run.cpp.s
 
 # Help Target
 help:
@@ -186,14 +117,7 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... run"
 	@echo "... edit_cache"
-	@echo "... __/library/communication/communication.o"
-	@echo "... __/library/communication/communication.i"
-	@echo "... __/library/communication/communication.s"
-	@echo "... run.o"
-	@echo "... run.i"
-	@echo "... run.s"
 .PHONY : help
 
 

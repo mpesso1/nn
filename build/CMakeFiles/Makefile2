@@ -60,76 +60,130 @@ CMAKE_SOURCE_DIR = /home/mason/Neurons
 CMAKE_BINARY_DIR = /home/mason/Neurons/build
 
 #=============================================================================
-# Target rules for target CMakeFiles/base.dir
+# Target rules for target CMakeFiles/libs.dir
 
 # All Build rule for target.
-CMakeFiles/base.dir/all:
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/depend
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/mason/Neurons/build/CMakeFiles --progress-num=1,2 "Built target base"
-.PHONY : CMakeFiles/base.dir/all
+CMakeFiles/libs.dir/all:
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/depend
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/mason/Neurons/build/CMakeFiles --progress-num=1,2,3 "Built target libs"
+.PHONY : CMakeFiles/libs.dir/all
 
 # Include target in all.
-all: CMakeFiles/base.dir/all
+all: CMakeFiles/libs.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/base.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/base.dir/all
+CMakeFiles/libs.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 3
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/libs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 0
-.PHONY : CMakeFiles/base.dir/rule
+.PHONY : CMakeFiles/libs.dir/rule
 
 # Convenience name for target.
-base: CMakeFiles/base.dir/rule
+libs: CMakeFiles/libs.dir/rule
 
-.PHONY : base
-
-# clean rule for target.
-CMakeFiles/base.dir/clean:
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/clean
-.PHONY : CMakeFiles/base.dir/clean
+.PHONY : libs
 
 # clean rule for target.
-clean: CMakeFiles/base.dir/clean
+CMakeFiles/libs.dir/clean:
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/clean
+.PHONY : CMakeFiles/libs.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/libs.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/run.dir
+# Directory level rules for directory library
+
+# Convenience name for "all" pass in the directory.
+library/all: library/communication/all
+
+.PHONY : library/all
+
+# Convenience name for "clean" pass in the directory.
+library/clean: library/communication/clean
+
+.PHONY : library/clean
+
+# Convenience name for "preinstall" pass in the directory.
+library/preinstall: library/communication/preinstall
+
+.PHONY : library/preinstall
+
+#=============================================================================
+# Directory level rules for directory library/communication
+
+# Convenience name for "all" pass in the directory.
+library/communication/all:
+
+.PHONY : library/communication/all
+
+# Convenience name for "clean" pass in the directory.
+library/communication/clean:
+
+.PHONY : library/communication/clean
+
+# Convenience name for "preinstall" pass in the directory.
+library/communication/preinstall:
+
+.PHONY : library/communication/preinstall
+
+#=============================================================================
+# Directory level rules for directory source
+
+# Convenience name for "all" pass in the directory.
+source/all: source/CMakeFiles/run.dir/all
+
+.PHONY : source/all
+
+# Convenience name for "clean" pass in the directory.
+source/clean: source/CMakeFiles/run.dir/clean
+
+.PHONY : source/clean
+
+# Convenience name for "preinstall" pass in the directory.
+source/preinstall:
+
+.PHONY : source/preinstall
+
+#=============================================================================
+# Target rules for target source/CMakeFiles/run.dir
 
 # All Build rule for target.
-CMakeFiles/run.dir/all: CMakeFiles/base.dir/all
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/depend
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/mason/Neurons/build/CMakeFiles --progress-num=3,4 "Built target run"
-.PHONY : CMakeFiles/run.dir/all
+source/CMakeFiles/run.dir/all: CMakeFiles/libs.dir/all
+	$(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/depend
+	$(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/mason/Neurons/build/CMakeFiles --progress-num=4,5,6 "Built target run"
+.PHONY : source/CMakeFiles/run.dir/all
 
 # Include target in all.
-all: CMakeFiles/run.dir/all
+all: source/CMakeFiles/run.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/run.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 4
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/run.dir/all
+source/CMakeFiles/run.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 6
+	$(MAKE) -f CMakeFiles/Makefile2 source/CMakeFiles/run.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/mason/Neurons/build/CMakeFiles 0
-.PHONY : CMakeFiles/run.dir/rule
+.PHONY : source/CMakeFiles/run.dir/rule
 
 # Convenience name for target.
-run: CMakeFiles/run.dir/rule
+run: source/CMakeFiles/run.dir/rule
 
 .PHONY : run
 
 # clean rule for target.
-CMakeFiles/run.dir/clean:
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/clean
-.PHONY : CMakeFiles/run.dir/clean
+source/CMakeFiles/run.dir/clean:
+	$(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/clean
+.PHONY : source/CMakeFiles/run.dir/clean
 
 # clean rule for target.
-clean: CMakeFiles/run.dir/clean
+clean: source/CMakeFiles/run.dir/clean
 
 .PHONY : clean
 

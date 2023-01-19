@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named base
+# Target rules for targets named libs
 
 # Build rule for target.
-base: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 base
-.PHONY : base
+libs: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 libs
+.PHONY : libs
 
 # fast build rule for target.
-base/fast:
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/build
-.PHONY : base/fast
+libs/fast:
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/build
+.PHONY : libs/fast
 
 #=============================================================================
 # Target rules for targets named run
@@ -133,7 +133,7 @@ run: cmake_check_build_system
 
 # fast build rule for target.
 run/fast:
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/build
+	$(MAKE) -f source/CMakeFiles/run.dir/build.make source/CMakeFiles/run.dir/build
 .PHONY : run/fast
 
 library/base.o: library/base.cpp.o
@@ -142,7 +142,7 @@ library/base.o: library/base.cpp.o
 
 # target to build an object file
 library/base.cpp.o:
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/library/base.cpp.o
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/library/base.cpp.o
 .PHONY : library/base.cpp.o
 
 library/base.i: library/base.cpp.i
@@ -151,7 +151,7 @@ library/base.i: library/base.cpp.i
 
 # target to preprocess a source file
 library/base.cpp.i:
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/library/base.cpp.i
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/library/base.cpp.i
 .PHONY : library/base.cpp.i
 
 library/base.s: library/base.cpp.s
@@ -160,35 +160,35 @@ library/base.s: library/base.cpp.s
 
 # target to generate assembly for a file
 library/base.cpp.s:
-	$(MAKE) -f CMakeFiles/base.dir/build.make CMakeFiles/base.dir/library/base.cpp.s
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/library/base.cpp.s
 .PHONY : library/base.cpp.s
 
-source/run.o: source/run.cpp.o
+library/communication/communication.o: library/communication/communication.cpp.o
 
-.PHONY : source/run.o
+.PHONY : library/communication/communication.o
 
 # target to build an object file
-source/run.cpp.o:
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/source/run.cpp.o
-.PHONY : source/run.cpp.o
+library/communication/communication.cpp.o:
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/library/communication/communication.cpp.o
+.PHONY : library/communication/communication.cpp.o
 
-source/run.i: source/run.cpp.i
+library/communication/communication.i: library/communication/communication.cpp.i
 
-.PHONY : source/run.i
+.PHONY : library/communication/communication.i
 
 # target to preprocess a source file
-source/run.cpp.i:
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/source/run.cpp.i
-.PHONY : source/run.cpp.i
+library/communication/communication.cpp.i:
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/library/communication/communication.cpp.i
+.PHONY : library/communication/communication.cpp.i
 
-source/run.s: source/run.cpp.s
+library/communication/communication.s: library/communication/communication.cpp.s
 
-.PHONY : source/run.s
+.PHONY : library/communication/communication.s
 
 # target to generate assembly for a file
-source/run.cpp.s:
-	$(MAKE) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/source/run.cpp.s
-.PHONY : source/run.cpp.s
+library/communication/communication.cpp.s:
+	$(MAKE) -f CMakeFiles/libs.dir/build.make CMakeFiles/libs.dir/library/communication/communication.cpp.s
+.PHONY : library/communication/communication.cpp.s
 
 # Help Target
 help:
@@ -197,15 +197,15 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
+	@echo "... libs"
 	@echo "... edit_cache"
-	@echo "... base"
 	@echo "... run"
 	@echo "... library/base.o"
 	@echo "... library/base.i"
 	@echo "... library/base.s"
-	@echo "... source/run.o"
-	@echo "... source/run.i"
-	@echo "... source/run.s"
+	@echo "... library/communication/communication.o"
+	@echo "... library/communication/communication.i"
+	@echo "... library/communication/communication.s"
 .PHONY : help
 
 

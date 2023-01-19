@@ -110,48 +110,6 @@ depend:
 	cd /home/mason/Neurons/build && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-library/CMakeFiles/base.dir/rule:
-	cd /home/mason/Neurons/build && $(MAKE) -f CMakeFiles/Makefile2 library/CMakeFiles/base.dir/rule
-.PHONY : library/CMakeFiles/base.dir/rule
-
-# Convenience name for target.
-base: library/CMakeFiles/base.dir/rule
-
-.PHONY : base
-
-# fast build rule for target.
-base/fast:
-	cd /home/mason/Neurons/build && $(MAKE) -f library/CMakeFiles/base.dir/build.make library/CMakeFiles/base.dir/build
-.PHONY : base/fast
-
-base.o: base.cpp.o
-
-.PHONY : base.o
-
-# target to build an object file
-base.cpp.o:
-	cd /home/mason/Neurons/build && $(MAKE) -f library/CMakeFiles/base.dir/build.make library/CMakeFiles/base.dir/base.cpp.o
-.PHONY : base.cpp.o
-
-base.i: base.cpp.i
-
-.PHONY : base.i
-
-# target to preprocess a source file
-base.cpp.i:
-	cd /home/mason/Neurons/build && $(MAKE) -f library/CMakeFiles/base.dir/build.make library/CMakeFiles/base.dir/base.cpp.i
-.PHONY : base.cpp.i
-
-base.s: base.cpp.s
-
-.PHONY : base.s
-
-# target to generate assembly for a file
-base.cpp.s:
-	cd /home/mason/Neurons/build && $(MAKE) -f library/CMakeFiles/base.dir/build.make library/CMakeFiles/base.dir/base.cpp.s
-.PHONY : base.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -159,11 +117,7 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... base"
 	@echo "... edit_cache"
-	@echo "... base.o"
-	@echo "... base.i"
-	@echo "... base.s"
 .PHONY : help
 
 

@@ -18,6 +18,8 @@
         "texture": "cpp",
         "ref_ptr": "cpp",
         "eigen": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "atomic": "cpp",
+        "chrono": "cpp"
     }
 }

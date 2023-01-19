@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblibs.a  CMakeFiles/libs.dir/library/base.cpp.o CMakeFiles/libs.dir/library/communication/communication.cpp.o
+/usr/bin/ranlib liblibs.a
