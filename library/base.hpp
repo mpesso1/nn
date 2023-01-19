@@ -10,6 +10,7 @@
  * @brief 
  * (M):= depth of a layer output.. number of desired filters
  * (N):= # of neurons in a layer output
+ * (W):= # of weight matrices needed... will be the same as N if using parameter sharing or if dealing with basic neural nets
  * (d):= depth of input to a layer
  * (F):= filter demension
  * (B):= Batch size
@@ -30,9 +31,9 @@ namespace nn
     
     // Memory
         // Weights
-        vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights {{{{}}}}; // C(M(N(d(Fx x Fy))))
+        vector< vector< vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>>> hidden_weights {{{{}}}}; // C(M(W(d(Fx x Fy))))
         // Biases
-        vector< vector< vector< vector<float>>>> bias {{{{}}}}; // C(M(N(d(b))))
+        vector< vector< vector< vector<float>>>> bias {{{{}}}}; // C(M(N(d(b))))    NOTE: you ony use one bias for each filter so actually is would be: C(M) for parameter sharing
         // Nueron Values
         vector<vector< vector< Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>>>> neuron_outputs {{{}}}; // b(C(M(Fx x Fy))
         // Input
